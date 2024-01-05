@@ -1,0 +1,35 @@
+version: "3.9"
+services:
+  clustereddatawarehouse:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - "DATASOURCE_URL=jdbc:mysql://clustereddatawarehouse@db/clusteredDataWareHouse"
+      - "DATASOURCE_PASSWORD=userpassword"
+      - "DATASOURCE_USERNAME=clustereddatawarehouse"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - "./target/clusteredDataWarehouse-0.0.1-SNAPSHOT.jar:/app/clusteredDataWarehouse-0.0.1-SNAPSHOT.jar"
+    command: [ "java", "-jar", "/app/clusteredDataWarehouse-0.0.1-SNAPSHOT.jar" ]
+  db:
+    image: mysql:8.1.0
+    restart: always
+    environment:
+      - 'MYSQL_DATABASE=clusteredDataWareHouse'
+      - 'MYSQL_PASSWORD=userpassword'
+      - 'MYSQL_USER=clustereddatawarehouse'
+      - "MYSQL_ROOT_PASSWORD=clusteredDataWareHouse@root"
+      - 'MYSQL_ROOT_HOST=%'
+      - 'MYSQL_ALLOW_EMPTY_PASSWORD=yes'
+    ports:
+      - '3308:3308'
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "db" ]
+      start_period: 3s
+      timeout: 2s
+      retries: 10
+
+
